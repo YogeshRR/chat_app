@@ -10,6 +10,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
+    bool isLogin = true;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: Center(
@@ -27,18 +28,18 @@ class _AuthScreenState extends State<AuthScreen> {
                 width: 200,
                 child: Image.asset('assets/images/chat.png'),
               ),
-              const Card(
-                margin: EdgeInsets.all(20),
+              Card(
+                margin: const EdgeInsets.all(20),
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.all(
+                    padding: const EdgeInsets.all(
                       16,
                     ),
                     child: Form(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          TextField(
+                          const TextField(
                             decoration: InputDecoration(
                               label: Text('email Address'),
                             ),
@@ -46,7 +47,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             autocorrect: false,
                             textCapitalization: TextCapitalization.none,
                           ),
-                          TextField(
+                          const TextField(
                             decoration: InputDecoration(
                               label: Text('Password'),
                             ),
@@ -54,6 +55,28 @@ class _AuthScreenState extends State<AuthScreen> {
                             autocorrect: false,
                             textCapitalization: TextCapitalization.none,
                             obscureText: true,
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                            ),
+                            child: Text(isLogin ? 'Login' : 'Sign Up'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                isLogin = !isLogin;
+                              });
+                            },
+                            child: Text(isLogin
+                                ? 'Create new account'
+                                : 'I already have an account'),
                           ),
                         ],
                       ),
