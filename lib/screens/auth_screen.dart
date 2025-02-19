@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+final _fireabase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -8,22 +11,57 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  bool isLogin = true;
+  var formKey = GlobalKey<FormState>();
+  var emailText = '';
+  var passwordText = '';
   @override
   Widget build(BuildContext context) {
-    var _formKey = GlobalKey<FormState>();
-    var _emailText = '';
-    var _passwordText = '';
-
-    void onSubmit() {
-      final isValid = _formKey.currentState!.validate();
+    void onSubmit() async {
+      final isValid = formKey.currentState!.validate();
       if (!isValid) {
-        print(_emailText);
-        print(_passwordText);
         return;
+      }
+
+      if (isLogin) {
+        // Login
+        try {
+          final userCredentials = await _fireabase.signInWithEmailAndPassword(
+              email: emailText, password: passwordText);
+        } on FirebaseAuthException catch (error) {
+          if (error.code == 'user-not-found') {
+            print('No user found for that email.');
+          } else if (error.code == 'wrong-password') {
+            print('Wrong password provided for that user.');
+          }
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.code),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      } else {
+        try {
+          final userCredentials =
+              await _fireabase.createUserWithEmailAndPassword(
+                  email: emailText, password: passwordText);
+        } on FirebaseAuthException catch (error) {
+          if (error.code == 'firebase_auth/email-already-in-use') {
+            print('The account already exists for that email.');
+          }
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.code),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
       }
     }
 
-    bool isLogin = true;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: Center(
@@ -49,7 +87,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       16,
                     ),
                     child: Form(
-                      key: _formKey,
+                      key: formKey,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -66,9 +104,10 @@ class _AuthScreenState extends State<AuthScreen> {
                                   !value.contains('@')) {
                                 return 'Please enter a valid email address';
                               }
+                              emailText = value.toString();
                               return null;
                             },
-                            onSaved: (newValue) => _emailText = newValue!,
+                            onSaved: (value) => emailText = value!,
                           ),
                           TextFormField(
                             decoration: const InputDecoration(
@@ -84,9 +123,10 @@ class _AuthScreenState extends State<AuthScreen> {
                                   value.length < 7) {
                                 return 'Password must be at least 7 characters long';
                               }
+                              passwordText = value.toString();
                               return null;
                             },
-                            onSaved: (newValue) => _passwordText = newValue!,
+                            onSaved: (value) => passwordText = value!,
                           ),
                           const SizedBox(
                             height: 12,
